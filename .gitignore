@@ -106,3 +106,4 @@ venv.bak/
 # my
 .directory
 .vscode
+.pylintrc
