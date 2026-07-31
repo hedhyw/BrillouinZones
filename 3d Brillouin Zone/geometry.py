@@ -123,7 +123,7 @@ class Point3D(object):
 
   def __mul__(self, k):
     k = Decimal(k)
-    return Point3D(self.x * k, self.y * k, self.z * k)
+    return type(self)(self.x * k, self.y * k, self.z * k)
 
   def __iter__(self):
     yield self.x
