@@ -153,9 +153,6 @@ class Point3D(object):
 class Vector3D(Point3D):
   """The mathematical model of a vector in three-dimensional space."""
 
-  def __init(self, x, y, z=None):
-    super(self, x, y, z)
-
   @staticmethod
   def by_points(first_point, second_point):
     """Return Vector3D which is defined by two points."""

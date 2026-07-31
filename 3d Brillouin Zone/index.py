@@ -4,9 +4,11 @@
 """Start application point."""
 
 import itertools
+import os
+import sys
 
+import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # This is implicitly used
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from base_centered_reciprocal_lattice import BaseCenteredReciprocalLattice
@@ -21,6 +23,7 @@ WIDTH = 0.05 # lattice period
 LATTICE_SIZE = 3 # count of atoms in one direction
 MIN_ZONES_COUNT = 2 # consider minimum N zones
 CENTER = Point3D(0, 0, 0)
+IMAGE_FILE_NAME = os.environ.get("BRILLOUIN_OUTPUT", "brillouin_zone_3d.png")
 
 def __get_bragg_planes(zone_points):
   """Return the Bragg planes."""
@@ -101,6 +104,28 @@ def __sort_vertices(points):
                     start_vector,
                     Vector3D.by_points(start_point, point)))
 
+def get_reciprocal_lattice_by_number(lattice_number):
+  """Return tuple(reciprocal lattice, zones-count) by the lattice number
+     or None if the number is invalid; ("0", zones-count) means exit."""
+  if lattice_number == "1":
+    return (BodyCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
+            max(MIN_ZONES_COUNT, 2))
+  if lattice_number == "2":
+    return (FaceCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
+            max(MIN_ZONES_COUNT, 2))
+  if lattice_number == "3":
+    return (PrimitiveReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
+            max(MIN_ZONES_COUNT, 2))
+  if lattice_number == "4":
+    return (HexagonalClosePackedReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
+            max(MIN_ZONES_COUNT, 3))
+  if lattice_number == "5":
+    return (BaseCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
+            max(MIN_ZONES_COUNT, 2))
+  if lattice_number == "0":
+    return (None, MIN_ZONES_COUNT)
+  return None
+
 def __get_reciprocal_lattice():
   """Return tuple(reciprocal lattice, zones-count) by the read of user input."""
   print("""
@@ -114,34 +139,19 @@ Select lattice:
   """)
   while True:
     print("Input the number:")
-    lattice_number = input()
-    if lattice_number == "1":
-      return (BodyCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
-              max(MIN_ZONES_COUNT, 2))
-    elif lattice_number == "2":
-      return (FaceCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
-              max(MIN_ZONES_COUNT, 2))
-    elif lattice_number == "3":
-      return (PrimitiveReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
-              max(MIN_ZONES_COUNT, 2))
-    elif lattice_number == "4":
-      return (HexagonalClosePackedReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
-              max(MIN_ZONES_COUNT, 3))
-    elif lattice_number == "5":
-      return (BaseCenteredReciprocalLattice(WIDTH, LATTICE_SIZE, CENTER),
-              max(MIN_ZONES_COUNT, 2))
-    elif lattice_number == "0":
-      return (None, MIN_ZONES_COUNT)
-    else:
+    result = get_reciprocal_lattice_by_number(input())
+    if result is None:
       print("Invalid number, try again")
       continue
-    break
+    return result
 
-def main():
-  lattice, zones_count = __get_reciprocal_lattice()
-  if lattice is None:
-    return 0
+def is_interactive_backend():
+  """Return True if the matplotlib backend can open a window."""
+  return matplotlib.get_backend().lower() not in ("agg", "pdf", "ps", "svg",
+                                                  "cairo", "template")
 
+def render(lattice, zones_count):
+  """Construct the first Brillouin zone of the lattice and draw it."""
   zone_points = list(lattice.points())[1:zones_count+1]
   print("Crystal is generated.")
 
@@ -180,11 +190,29 @@ def main():
   ax.set_xlabel('X, ' + str_dimension)
   ax.set_ylabel('Y, ' + str_dimension)
   ax.set_zlabel('Z, ' + str_dimension)
-  plt.show()
+  if is_interactive_backend():
+    plt.show()
+  else:
+    fig.savefig(IMAGE_FILE_NAME)
+    print("Figure is saved to " + IMAGE_FILE_NAME)
+  plt.close(fig)
 
-  main()
-  return 0
+def main(argv=None):
+  """Run the drawer: non-interactive if a lattice number is given as an
+     argument, otherwise prompt for lattice numbers in a loop."""
+  argv = sys.argv[1:] if argv is None else argv
+  if argv:
+    result = get_reciprocal_lattice_by_number(argv[0])
+    if result is None or result[0] is None:
+      print("Usage: index.py [lattice-number 1..5]")
+      return 2
+    render(*result)
+    return 0
+  while True:
+    lattice, zones_count = __get_reciprocal_lattice()
+    if lattice is None:
+      return 0
+    render(lattice, zones_count)
 
 if __name__ == '__main__':
-  import sys
   sys.exit(main())

@@ -4,6 +4,8 @@
 """ Main file for Brillouin Zone Drawer"""
 
 import itertools
+import os
+import sys
 
 from PIL import Image, ImageDraw
 
@@ -12,12 +14,12 @@ from PIL import Image, ImageDraw
 from primitive_crystal import PrimitiveCrystal
 from sympy.geometry import Line, Point, Point2D, Segment
 
-IMAGE_FILE_NAME = "/tmp/brillouin_zone.png"
+IMAGE_FILE_NAME = os.environ.get("BRILLOUIN_OUTPUT", "brillouin_zone.png")
 IMAGE_SIZE = (720, 720)
 WIDTH = 160 # px, lattice period
 IMAGE_CENTER = (0.5 * IMAGE_SIZE[0], 0.5 * IMAGE_SIZE[1])
 CENTER = Point(0, 0)
-ZONES_COUNT = 12
+ZONES_COUNT = int(os.environ.get("BRILLOUIN_ZONES", "12"))
 CRYSTAL_RANGE = 4 # (4+4) x (4+4)
 ATOM_COLOR = "black"
 ATOM_RADIUS = 3 # px
@@ -35,6 +37,17 @@ COLORS = itertools.cycle([(0xef, 0x9a, 0x9a, 0xff),
                           (0x8F, 0xF4, 0xEE, 0xFF),
                           (0xb0, 0xbe, 0xc5, 0xFF),
                           (0x90, 0xCA, 0xF9, 0xFF)])
+
+def can_show_image():
+  """ Return True if an image viewer can be opened (interactive session) """
+
+  if os.environ.get("BRILLOUIN_NO_SHOW"):
+    return False
+  if sys.platform.startswith("linux") \
+      and not os.environ.get("DISPLAY") \
+      and not os.environ.get("WAYLAND_DISPLAY"):
+    return False
+  return True
 
 def flat_intersections(vals):
   """ Return 1d list from 1d list """
@@ -207,10 +220,11 @@ def main():
 
   del draw
   image.save(IMAGE_FILE_NAME)
-  image.show()
+  print('Image is saved to ' + IMAGE_FILE_NAME)
+  if can_show_image():
+    image.show()
 
   return 0
 
 if __name__ == '__main__':
-  import sys
   sys.exit(main())
