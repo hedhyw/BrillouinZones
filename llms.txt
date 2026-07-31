@@ -1,0 +1,21 @@
+# BrillouinZones
+
+> Python programs for constructing and drawing Brillouin zones of crystal lattices in two- and three-dimensional space, written for a condensed matter physics course. The 2D drawer renders the first several Brillouin zones of a lattice to a PNG using Pillow and sympy; the 3D drawer renders the first Brillouin zone of a reciprocal lattice (primitive, body-centered, face-centered, base-centered or hexagonal close-packed) as a matplotlib 3D plot.
+
+Run `python3 "./2d Brillouin Zone/index.py"` or `python3 "./3d Brillouin Zone/index.py" <lattice-number 1..5>` after `pip3 install -r requirements.txt`. Set `MPLBACKEND=Agg` for headless rendering to files.
+
+## Docs
+
+- [README](README.md): what the project is, how to install and run the drawers, example images
+- [AGENTS.md](AGENTS.md): repository layout, how each script works, environment variables, tests and CI
+
+## Code
+
+- [2D entry point](2d%20Brillouin%20Zone/index.py): draws N Brillouin zones of a 2D lattice via Bragg-line intersections and flood fill
+- [3D entry point](3d%20Brillouin%20Zone/index.py): draws the first Brillouin zone polyhedron of a chosen reciprocal lattice
+- [3D geometry library](3d%20Brillouin%20Zone/geometry.py): Decimal-based points, vectors, planes, lines and their intersections
+
+## Optional
+
+- [Tests](tests/): pytest suite for lattice shells, geometry primitives and reciprocal lattices
+- [CI workflow](.github/workflows/check.yml): compiles sources, runs tests, runs both drawers headless

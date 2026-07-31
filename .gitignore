@@ -107,3 +107,6 @@ venv.bak/
 .directory
 .vscode
 .pylintrc
+
+# Generated images
+brillouin_zone*.png

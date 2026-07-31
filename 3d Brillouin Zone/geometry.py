@@ -123,7 +123,7 @@ class Point3D(object):
 
   def __mul__(self, k):
     k = Decimal(k)
-    return Point3D(self.x * k, self.y * k, self.z * k)
+    return type(self)(self.x * k, self.y * k, self.z * k)
 
   def __iter__(self):
     yield self.x
@@ -152,9 +152,6 @@ class Point3D(object):
 
 class Vector3D(Point3D):
   """The mathematical model of a vector in three-dimensional space."""
-
-  def __init(self, x, y, z=None):
-    super(self, x, y, z)
 
   @staticmethod
   def by_points(first_point, second_point):
